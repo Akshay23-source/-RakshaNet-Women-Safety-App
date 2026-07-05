@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bluetooth Permissions Test - RakshaNet</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            background: #f5f5f5;
+        }
+        .status {
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-weight: 500;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        .test-result {
+            margin-top: 20px;
+            padding: 15px;
+            border-left: 4px solid #667eea;
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔵 Bluetooth Permissions Test</h1>
+        <p class="subtitle">RakshaNet SmartWatch Integration Diagnostic Tool</p>
+
+        <div class="test-section">
+            <h3>1. Browser Compatibility Check</h3>
+            <div id="browserCheck"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Permissions Policy Check</h3>
+            <div id="permissionsCheck"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Bluetooth API Test</h3>
+            <button id="testButton">Test Bluetooth Connection</button>
+            <div id="testResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. System Information</h3>
+            <div id="systemInfo"></div>
+        </div>
+    </div>
+
+    <script>
+        // Test 1: Browser Compatibility
+        function checkBrowser() {
+            const browserCheck = document.getElementById('browserCheck');
+            const ua = navigator.userAgent;
+            let browserName = 'Unknown';
+            let isSupported = false;
+
+            if (ua.includes('Chrome') && !ua.includes('Edg')) {
+                browserName = 'Google Chrome';
+                isSupported = true;
+            } else if (ua.includes('Edg')) {
+                browserName = 'Microsoft Edge';
+                isSupported = true;
+            } else if (ua.includes('OPR') || ua.includes('Opera')) {
+                browserName = 'Opera';
+                isSupported = true;
+            } else if (ua.includes('Firefox')) {
+                browserName = 'Firefox';
+                isSupported = false;
+            } else if (ua.includes('Safari')) {
+                browserName = 'Safari';
+                isSupported = false;
+            }
+
+            if (isSupported) {
+                browserCheck.innerHTML = `
+                    <div class="status success">
+                        ✅ Browser: ${browserName} - Bluetooth is supported!
+                    </div>
+                `;
+            } else {
+                browserCheck.innerHTML = `
+                    <div class="status error">
+                        ❌ Browser: ${browserName} - Bluetooth is NOT supported
+                        <br><small>Please use Chrome, Edge, or Opera</small>
+                    </div>
+                `;
+            }
+
+            return isSupported;
+        }
+
+        // Test 2: Permissions Policy
+        function checkPermissions() {
+            const permissionsCheck = document.getElementById('permissionsCheck');
+            
+            if ('bluetooth' in navigator) {
+                permissionsCheck.innerHTML = `
+                    <div class="status success">
+                        ✅ Web Bluetooth API is available
+                    </div>
+                `;
+                
+                // Try to check permissions
+                if ('permissions' in navigator) {
+                    navigator.permissions.query({ name: 'bluetooth' })
+                        .then(result => {
+                            const statusDiv = document.createElement('div');
+                            if (result.state === 'granted') {
+                                statusDiv.className = 'status success';
+                                statusDiv.textContent = '✅ Bluetooth permission: GRANTED';
+                            } else if (result.state === 'prompt') {
+                                statusDiv.className = 'status info';
+                                statusDiv.textContent = 'ℹ️ Bluetooth permission: Will ask when needed';
+                            } else {
+                                statusDiv.className = 'status warning';
+                                statusDiv.textContent = '⚠️ Bluetooth permission: ' + result.state;
+                            }
+                            permissionsCheck.appendChild(statusDiv);
+                        })
+                        .catch(err => {
+                            console.log('Permissions query not supported:', err);
+                        });
+                }
+            } else {
+                permissionsCheck.innerHTML = `
+                    <div class="status error">
+                        ❌ Web Bluetooth API is NOT available
+                        <br><small>Check your browser and HTTPS connection</small>
+                    </div>
+                `;
+            }
+        }
+
+        // Test 3: Bluetooth Connection Test
+        document.getElementById('testButton').addEventListener('click', async () => {
+            const testResult = document.getElementById('testResult');
+            const button = document.getElementById('testButton');
+            
+            button.disabled = true;
+            button.textContent = 'Testing...';
+            
+            testResult.innerHTML = `
+                <div class="status info">
+                    🔍 Requesting Bluetooth device...
+                    <br><small>A browser dialog should appear</small>
+                </div>
+            `;
+
+            try {
+                if (!('bluetooth' in navigator)) {
+                    throw new Error('Web Bluetooth API not available');
+                }
+
+                const device = await navigator.bluetooth.requestDevice({
+                    filters: [
+                        { services: ['heart_rate'] },
+                        { services: ['battery_service'] }
+                    ],
+                    optionalServices: [
+                        'battery_service',
+                        'heart_rate',
+                        'device_information'
+                    ]
+                });
+
+                testResult.innerHTML = `
+                    <div class="status success">
+                        ✅ SUCCESS! Bluetooth is working correctly!
+                        <br><br>
+                        <strong>Selected device:</strong> ${device.name || 'Unnamed device'}
+                        <br>
+                        <strong>Device ID:</strong> ${device.id}
+                        <br><br>
+                        <small>Your Bluetooth permissions are configured correctly. You can now use SmartWatch Integration in RakshaNet!</small>
+                    </div>
+                `;
+
+            } catch (error) {
+                let errorMessage = error.message;
+                let cssClass = 'error';
+                
+                if (error.name === 'NotFoundError') {
+                    errorMessage = 'No device selected - this is OK! The dialog appeared, which means permissions are working.';
+                    cssClass = 'warning';
+                } else if (error.name === 'SecurityError' || errorMessage.includes('permissions policy')) {
+                    errorMessage = `
+                        ❌ PERMISSIONS POLICY ERROR
+                        <br><br>
+                        The deployment configuration is blocking Bluetooth access.
+                        <br><br>
+                        <strong>Solution:</strong>
+                        <ol style="text-align: left; margin: 10px 0;">
+                            <li>Check that <code>public/_headers</code>, <code>netlify.toml</code>, or <code>vercel.json</code> contains:<br>
+                            <code>Permissions-Policy: bluetooth=*</code></li>
+                            <li>Redeploy your application</li>
+                            <li>Clear browser cache (Ctrl+Shift+R)</li>
+                            <li>Test again</li>
+                        </ol>
+                        <br>
+                        <strong>Error details:</strong> ${error.message}
+                    `;
+                }
+
+                testResult.innerHTML = `
+                    <div class="status ${cssClass}">
+                        ${errorMessage}
+                    </div>
+                `;
+
+                console.error('Bluetooth test error:', error);
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Test Bluetooth Connection';
+            }
+        });
+
+        // Test 4: System Information
+        function showSystemInfo() {
+            const systemInfo = document.getElementById('systemInfo');
+            const isHttps = window.location.protocol === 'https:';
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            
+            systemInfo.innerHTML = `
+                <div class="test-result">
+                    <strong>Protocol:</strong> ${window.location.protocol} 
+                    ${isHttps || isLocalhost ? '✅' : '❌ (HTTPS required for production)'}
+                    <br>
+                    <strong>Host:</strong> ${window.location.host}
+                    <br>
+                    <strong>URL:</strong> ${window.location.href}
+                    <br>
+                    <strong>User Agent:</strong> ${navigator.userAgent}
+                </div>
+            `;
+        }
+
+        // Run all checks on load
+        window.addEventListener('load', () => {
+            checkBrowser();
+            checkPermissions();
+            showSystemInfo();
+        });
+    </script>
+</body>
+</html>

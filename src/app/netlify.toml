@@ -1,0 +1,27 @@
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Allow critical permissions for safety features
+    Permissions-Policy = "bluetooth=(self), geolocation=(self), camera=(self), microphone=(self), accelerometer=(self), gyroscope=(self)"
+    Feature-Policy = "bluetooth 'self'; geolocation 'self'; camera 'self'; microphone 'self'; accelerometer 'self'; gyroscope 'self'"
+    
+    # CORS for Supabase and APIs
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization, apikey, x-client-info"
+    
+    # Security headers
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Redirect rules for SPA
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Environment detection
+[context.production.environment]
+  NODE_ENV = "production"
